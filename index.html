@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>藍昌路不吃會死 - 友情大考驗（可提交計分版）</title>
+  <style>
+    :root{
+      --bg:#f0f2f5;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#4b6584;
+      --primary2:#2d98da;
+      --border:#e5e7eb;
+      --soft:#f9fafb;
+      --good:#16a34a;
+      --bad:#dc2626;
+      --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:"Microsoft JhengHei", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      padding:20px;
+      margin:0;
+    }
+    .container{
+      max-width:980px;
+      margin:auto;
+      background:var(--card);
+      padding:28px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+    h1{
+      text-align:center;
+      color:var(--primary);
+      margin:0 0 8px 0;
+      padding-bottom:12px;
+      border-bottom:2px dashed var(--primary);
+    }
+    .intro{
+      text-align:center;
+      font-style:italic;
+      color:var(--muted);
+      margin:10px 0 22px;
+    }
+    .meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-bottom:18px;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .pill{
+      background:var(--soft);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:8px 12px;
+    }
+    .section{
+      margin:22px 0 12px;
+      padding:12px 14px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      color:var(--primary);
+      font-weight:800;
+    }
+    .question{
+      margin-bottom:16px;
+      padding:16px;
+      border-left:6px solid #a5b1c2;
+      background:#f8fafc;
+      border-radius:12px;
+    }
+    .question-title{
+      font-weight:800;
+      font-size:1.03rem;
+      margin-bottom:10px;
+      display:block;
+    }
+    .desc{
+      color:var(--muted);
+      font-size:.92rem;
+      margin:0 0 12px 0;
+    }
+    .options{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:700px){
+      .options{grid-template-columns:1fr;}
+    }
+    .option{
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      cursor:pointer;
+      transition:.2s;
+      background:#fff;
+      text-align:center;
+      user-select:none;
+      position:relative;
+    }
+    .option:hover{background:#e9eef5}
+    .option.selected{
+      border-color:var(--primary2);
+      box-shadow:0 0 0 3px rgba(45,152,218,.15);
+      background:#f2f8ff;
+    }
+    .option input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .inputbox{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 12px;
+      font-size:1rem;
+      outline:none;
+      background:#fff;
+    }
+    .inputbox:focus{
+      border-color:var(--primary2);
+      box-shadow:0 0 0 3px rgba(45,152,218,.15);
+    }
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      flex:1;
+      min-width:220px;
+      padding:14px 16px;
+      border:none;
+      border-radius:12px;
+      font-size:1.05rem;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .btn-primary{
+      background:var(--primary);
+      color:white;
+    }
+    .btn-primary:hover{background:var(--primary2)}
+    .btn-ghost{
+      background:#fff;
+      border:1px solid var(--border);
+      color:var(--text);
+    }
+    .btn-ghost:hover{background:var(--soft)}
+    .footer{
+      text-align:center;
+      margin-top:24px;
+      font-size:.85rem;
+      color:#9ca3af;
+    }
+    .result{
+      margin-top:22px;
+      padding:18px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      display:none;
+    }
+    .result h2{margin:0 0 8px 0; color:var(--primary);}
+    .scoreline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      margin:8px 0 10px;
+    }
+    .badge{
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:800;
+      border:1px solid var(--border);
+      background:var(--soft);
+    }
+    .badge.good{color:var(--good); border-color:rgba(22,163,74,.25); background:rgba(22,163,74,.06)}
+    .badge.bad{color:var(--bad); border-color:rgba(220,38,38,.25); background:rgba(220,38,38,.06)}
+    .badge.warn{color:var(--warn); border-color:rgba(245,158,11,.3); background:rgba(245,158,11,.08)}
+    .small{color:var(--muted); font-size:.95rem; margin:0;}
+    .review{
+      margin-top:14px;
+      border-top:1px dashed var(--border);
+      padding-top:14px;
+    }
+    .review-item{
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      margin-bottom:10px;
+      background:var(--soft);
+    }
+    .review-item strong{display:block; margin-bottom:6px}
+    .kv{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:6px;
+    }
+    .kv span{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:.92rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>藍昌路不吃會死 🩵 友情大考驗</h1>
+    <p class="intro">可點選作答 ✅｜可提交計分 ✅｜錯題回顧 ✅<br/>錯的人明天請喝飲料 😈</p>
+
+    <div class="meta">
+      <div class="pill">📝 共 <span id="qCount">20</span> 題</div>
+      <div class="pill">🎯 交卷後即時計分</div>
+      <div class="pill">🔎 支援輸入題：去空白/大小寫不敏感/數字可含「元」</div>
+    </div>
+
+    <form id="quizForm"></form>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btnSubmit">提交答案（算分）</button>
+      <button type="button" class="btn btn-ghost" id="btnReset">清除重填</button>
+    </div>
+
+    <div class="result" id="resultBox">
+      <h2>成績公布 🎯</h2>
+      <div class="scoreline">
+        <div class="badge" id="badgeScore">分數：-</div>
+        <div class="badge" id="badgePercent">正確率：-</div>
+      </div>
+      <p class="small" id="resultNote"></p>
+
+      <div class="review" id="reviewBox">
+        <h3 style="margin:0 0 10px 0; color:var(--primary);">答錯題目回顧</h3>
+        <div id="reviewList"></div>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 藍昌路不吃會死 - 友情大考驗 | 單頁版（index.html）</div>
+  </div>
+
+  <script>
+    /**
+     * 題型：
+     * - type: "choice"  => 單選
+     * - type: "input"   => 輸入（短答/數字）
+     *
+     * answer.accept: 允許的答案陣列（會做正規化比對）
+     */
+    const quiz = [
+      { section:"一、租屋與居住決策分析 (1-5 題)" },
+
+      { id:1, type:"choice",
+        title:"Q1. 住房危機應變：當初租不到房，王詩函放話要去住哪？",
+        options:["高鐵站","公園","圖書館","回台東"],
+        answer:{ accept:["公園"] }
+      },
+
+      { id:2, type:"input",
+        title:"Q2. 戰略物資準備：承上題，曹嘉凌說要買幾個高級帳篷陪住？",
+        placeholder:"例如：3 或 3個",
+        answer:{ accept:["3","3個","三","三個"] }
+      },
+
+      { id:3, type:"choice",
+        title:"Q3. 房東命名認知：房東「葉螺蓉」的名字讓詩函聯想到什麼？",
+        options:["很貴的藥材","很好吃","一場夢","武俠小說人物"],
+        answer:{ accept:["很好吃"] }
+      },
+
+      { id:4, type:"input",
+        title:"Q4. 租屋遷徙成本：王詩函搬家時，物流箱數最高紀錄是幾箱？",
+        placeholder:"例如：9 或 9箱",
+        answer:{ accept:["9","9箱","九","九箱"] }
+      },
+
+      { id:5, type:"choice",
+        title:"Q5. 認親策略管理：誰曾想認王詩函的阿估「雪人」當乾爹？",
+        options:["曹嘉凌","廖婧伃","曹嘉凌與廖婧伃","王詩函"],
+        answer:{ accept:["曹嘉凌與廖婧伃"] }
+      },
+
+      { section:"二、組織日常與情緒勞務 (6-10 題)" },
+
+      { id:6, type:"choice",
+        title:"Q6. 考場壓力反應：詩函在什麼考試看到人嘔吐而突然感性？",
+        options:["經濟學","MIS","會計","統計學"],
+        answer:{ accept:["會計"] }
+      },
+
+      { id:7, type:"choice",
+        title:"Q7. 生活駭客定義：曹嘉凌捐血拿康乃馨，被賦予了什麼稱號？",
+        options:["捐血大使","生活駭客","省錢一姐","藍昌路帶貨王"],
+        answer:{ accept:["生活駭客"] }
+      },
+
+      { id:8, type:"input",
+        title:"Q8. 網路拍賣損益：王詩函曾以虧損多少元的價格賣掉二手靴子？",
+        placeholder:"例如：28 或 28元",
+        answer:{ accept:["28","28元","二十八","二十八元"] }
+      },
+
+      { id:9, type:"choice",
+        title:"Q9. 群組衝突來源：廖婧伃（大膽示愛）最討厭曹嘉凌在群組幹嘛？",
+        options:["一直傳美食照片","戳戳戳","消失太久沒回訊息","突然要大家跳活寶"],
+        answer:{ accept:["戳戳戳"] }
+      },
+
+      { id:10, type:"choice",
+        title:"Q10. 身體損害紀錄：曹嘉凌曾哀號自己踢斷了哪個部位的指甲？",
+        options:["手拇指","腳小拇指","腳大拇指","手小拇指"],
+        answer:{ accept:["腳小拇指"] }
+      },
+
+      { section:"三、社交互動與資源管理 (11-20 題)" },
+
+      { id:11, type:"choice",
+        title:"Q11. 廚房失誤分析：曹嘉凌做舊金山披薩時，哪種肉來不及加？",
+        options:["燻雞肉","壽喜牛","培根","德式香腸"],
+        answer:{ accept:["壽喜牛"] }
+      },
+
+      { id:12, type:"choice",
+        title:"Q12. 運動資源配置：曹嘉凌推薦動茲券可以去楠梓哪裡使用？",
+        options:["健身房","高大游泳池","羽球館","迪卡儂"],
+        answer:{ accept:["高大游泳池"] }
+      },
+
+      { id:13, type:"choice",
+        title:"Q13. 凌晨採買需求：誰曾在半夜一點多問大家要不要買永豆？",
+        options:["曹嘉凌","廖婧伃","王詩函","學姊"],
+        answer:{ accept:["王詩函"] }
+      },
+
+      { id:14, type:"choice",
+        title:"Q14. 穿衣舒適度評估：廖婧伃曾說睡醒發現衣服是濕的，發生什麼事？",
+        options:["流冷汗","冷氣漏水","沒脫衣服睡覺","屋頂漏水"],
+        answer:{ accept:["冷氣漏水"] }
+      },
+
+      { id:15, type:"choice",
+        title:"Q15. 行李色系共識：王詩函曾誇獎大家的哪件物品顏色很酷？",
+        options:["行李箱","雨傘","外套","鞋子"],
+        answer:{ accept:["行李箱"] }
+      },
+
+      { id:16, type:"choice",
+        title:"Q16. 垃圾管理職責：群組中公認的「藍昌路帶貨王」是誰？",
+        options:["廖婧伃","王詩函","曹嘉凌","學姊"],
+        answer:{ accept:["王詩函"] }
+      },
+
+      { id:17, type:"input",
+        title:"Q17. 炎上事件營銷：大家曾約定在幾點一起看「炎上艾莉莎莎」？",
+        placeholder:"例如：晚上8點後 / 20:00後",
+        answer:{ accept:["晚上8點後","晚上8點以後","晚上八點後","晚上八點以後","8點後","20:00後","20點後","20點以後","20:00以後"] }
+      },
+
+      { id:18, type:"input",
+        title:"Q18. 財務誘因分析：曹嘉凌被迫留 Call 班，大膽示愛首先問什麼？",
+        placeholder:"例如：有薪水嗎",
+        answer:{ accept:["有薪水嗎"] }
+      },
+
+      { id:19, type:"choice",
+        title:"Q19. 物件所有權分析：王詩函曾因為找不到哪種白色的東西感到焦慮？",
+        options:["襪子","口罩","毛巾","充電線"],
+        answer:{ accept:["襪子"] }
+      },
+
+      { id:20, type:"choice",
+        title:"Q20. 期中充電計畫：廖婧伃在期中考週竟然打算衝去哪裡充電？",
+        o
