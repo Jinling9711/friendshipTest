@@ -387,4 +387,219 @@
 
       { id:20, type:"choice",
         title:"Q20. 期中充電計畫：廖婧伃在期中考週竟然打算衝去哪裡充電？",
-        o
+        options:["山上","海邊","咖啡廳","圖書館"],
+        answer:{ accept:["海邊"] }
+      },
+    ];
+
+    const quizForm = document.getElementById("quizForm");
+    document.getElementById("qCount").textContent = 20;
+
+    function normalize(s){
+      if(s === null || s === undefined) return "";
+      return String(s)
+        .trim()
+        .replace(/\s+/g,"")          // 去掉所有空白
+        .replace(/：/g,":")
+        .toLowerCase();
+    }
+
+    function render(){
+      quizForm.innerHTML = "";
+      quiz.forEach(item => {
+        if(item.section){
+          const sec = document.createElement("div");
+          sec.className = "section";
+          sec.textContent = item.section;
+          quizForm.appendChild(sec);
+          return;
+        }
+
+        const qDiv = document.createElement("div");
+        qDiv.className = "question";
+
+        const title = document.createElement("span");
+        title.className = "question-title";
+        title.textContent = item.title;
+        qDiv.appendChild(title);
+
+        if(item.type === "choice"){
+          const opts = document.createElement("div");
+          opts.className = "options";
+
+          item.options.forEach(opt => {
+            const label = document.createElement("label");
+            label.className = "option";
+            label.dataset.qid = item.id;
+            label.dataset.opt = opt;
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = `q${item.id}`;
+            input.value = opt;
+
+            const text = document.createElement("div");
+            text.textContent = opt;
+
+            label.appendChild(input);
+            label.appendChild(text);
+
+            label.addEventListener("click", () => {
+              document.querySelectorAll(`.option[data-qid="${item.id}"]`)
+                .forEach(el => el.classList.remove("selected"));
+              label.classList.add("selected");
+              input.checked = true;
+            });
+
+            opts.appendChild(label);
+          });
+
+          qDiv.appendChild(opts);
+        }
+
+        if(item.type === "input"){
+          const p = document.createElement("p");
+          p.className = "desc";
+          p.textContent = "（輸入題：會自動去空白；數字可含「元」「個」「箱」等）";
+          qDiv.appendChild(p);
+
+          const input = document.createElement("input");
+          input.className = "inputbox";
+          input.type = "text";
+          input.name = `q${item.id}`;
+          input.placeholder = item.placeholder || "請輸入答案";
+          qDiv.appendChild(input);
+        }
+
+        quizForm.appendChild(qDiv);
+      });
+    }
+
+    render();
+
+    function getUserAnswer(item){
+      if(item.type === "choice"){
+        const checked = quizForm.querySelector(`input[name="q${item.id}"]:checked`);
+        return checked ? checked.value : null;
+      }
+      if(item.type === "input"){
+        const inp = quizForm.querySelector(`input[name="q${item.id}"]`);
+        return inp ? inp.value : null;
+      }
+      return null;
+    }
+
+    function isCorrect(item, userAns){
+      const accepts = (item.answer?.accept || []).map(normalize);
+      const u = normalize(userAns);
+
+      if(!u) return false;
+
+      // 數字題加強：把「元」「個」「箱」等去掉再比一次
+      const u2 = u.replace(/元|個|箱/g,"");
+
+      return accepts.includes(u) || accepts.includes(u2);
+    }
+
+    function grade(){
+      const qItems = quiz.filter(x => !x.section);
+      let correct = 0;
+      const wrong = [];
+
+      qItems.forEach(item => {
+        const u = getUserAnswer(item);
+        if(isCorrect(item, u)){
+          correct++;
+        }else{
+          wrong.push({
+            id:item.id,
+            title:item.title,
+            user:(u && String(u).trim()) ? u : "（未作答）",
+            key:item.answer.accept[0]
+          });
+        }
+      });
+
+      return { total:qItems.length, correct, wrong };
+    }
+
+    const resultBox = document.getElementById("resultBox");
+    const badgeScore = document.getElementById("badgeScore");
+    const badgePercent = document.getElementById("badgePercent");
+    const resultNote = document.getElementById("resultNote");
+    const reviewList = document.getElementById("reviewList");
+    const reviewBox = document.getElementById("reviewBox");
+
+    function showResult(){
+      const { total, correct, wrong } = grade();
+      const percent = Math.round((correct / total) * 100);
+
+      resultBox.style.display = "block";
+      badgeScore.textContent = `分數：${correct} / ${total}`;
+      badgePercent.textContent = `正確率：${percent}%`;
+
+      // badge 色彩
+      badgeScore.classList.remove("good","bad","warn");
+      if(percent >= 85) badgeScore.classList.add("good");
+      else if(percent >= 60) badgeScore.classList.add("warn");
+      else badgeScore.classList.add("bad");
+
+      resultNote.textContent =
+        (wrong.length === 0)
+          ? "全對！！你們是真閨蜜，恭喜免飲料。"
+          : `你答錯 ${wrong.length} 題。錯的人明天請喝飲料 😈（或加碼：每錯一題+1杯）`;
+
+      reviewList.innerHTML = "";
+      if(wrong.length === 0){
+        reviewBox.style.display = "block";
+        const div = document.createElement("div");
+        div.className = "review-item";
+        div.style.background = "rgba(22,163,74,.06)";
+        div.style.borderColor = "rgba(22,163,74,.25)";
+        div.innerHTML = `<strong style="color:var(--good);">全對！！</strong><div class="small">沒有錯題可以嘴你。</div>`;
+        reviewList.appendChild(div);
+      }else{
+        reviewBox.style.display = "block";
+        wrong.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "review-item";
+          div.innerHTML = `
+            <strong>${item.id}. ${item.title}</strong>
+            <div class="kv">
+              <span>你的答案：${escapeHtml(item.user)}</span>
+              <span>正確答案：${escapeHtml(item.key)}</span>
+            </div>
+          `;
+          reviewList.appendChild(div);
+        });
+      }
+
+      // 滾到結果
+      resultBox.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    document.getElementById("btnSubmit").addEventListener("click", showResult);
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      // 清除 radio
+      quizForm.querySelectorAll("input[type=radio]").forEach(i => i.checked = false);
+      // 清除 input
+      quizForm.querySelectorAll("input[type=text]").forEach(i => i.value = "");
+      // 清除選取樣式
+      quizForm.querySelectorAll(".option.selected").forEach(el => el.classList.remove("selected"));
+      // 隱藏結果
+      resultBox.style.display = "none";
+      window.scrollTo({ top:0, behavior:"smooth" });
+    });
+  </script>
+</body>
+</html>
