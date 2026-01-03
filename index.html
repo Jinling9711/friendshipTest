@@ -3,115 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>藍昌路友情鑑定系統</title>
+    <title>藍昌路不吃會死 - 友情鑑定系統</title>
     <style>
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: #eef2f7; padding: 20px; display: flex; justify-content: center; }
-        .quiz-container { max-width: 700px; width: 100%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9em; }
-        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        .q-text { font-weight: bold; font-size: 1.1em; color: #34495e; margin-bottom: 15px; display: block; }
-        .options-group { display: flex; flex-direction: column; gap: 10px; }
-        label { padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        label:hover { background-color: #f5f6fa; }
-        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-        .btn-submit { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; transition: 0.3s; margin-top: 20px; }
-        .btn-submit:hover { background: #2980b9; }
-        #result-area { display: none; margin-top: 30px; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.5em; font-weight: bold; }
-        .correct-ans { color: #e74c3c; font-size: 0.9em; margin-top: 5px; display: none; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f0f2f5; color: #1c1e21; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #4b6584; border-bottom: 2px dashed #4b6584; padding-bottom: 10px; }
+        .intro { text-align: center; font-style: italic; color: #777; margin-bottom: 30px; }
+        .question { margin-bottom: 25px; padding: 15px; border-left: 5px solid #a5b1c2; background: #f9f9f9; border-radius: 0 8px 8px 0; }
+        .question-title { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: block; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .option-label { 
+            padding: 10px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; 
+            transition: 0.3s; background: white; text-align: center; display: block;
+        }
+        .option-label:hover { background: #d1d8e0; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .option-label { background: #4b6584; color: white; border-color: #4b6584; }
+        
+        .btn-submit { display: block; width: 100%; padding: 15px; background: #4b6584; color: white; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
+        .btn-submit:hover { background: #2d98da; }
+        
+        #result-display { display: none; margin-top: 30px; padding: 25px; border-radius: 10px; text-align: center; background: #fff; border: 3px solid #4b6584; }
+        .score-text { font-size: 2em; font-weight: bold; color: #e74c3c; margin-bottom: 10px; }
+        .comment-text { font-size: 1.2em; color: #2c3e50; font-weight: bold; }
+        .correct-ans-hint { color: #e67e22; font-size: 0.9em; margin-top: 8px; display: none; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.8em; color: #aaa; }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
-    <h1>藍昌路不吃會死 🩵 友情鑑定考</h1>
-    <div class="subtitle">受測對象：曹嘉凌、廖婧伃、王詩函</div>
-    
+<div class="container">
+    <h1>藍昌路不吃會死 🩵 友情大考驗</h1>
+    <p class="intro">參賽者：曹嘉凌、廖婧伃、王詩函<br>測試你們是真閨蜜，還是只是租屋合夥人？</p>
+
     <form id="quizForm">
-        <div id="questions"></div>
-        
-        <button type="button" class="btn-submit" onclick="calculateScore()">提交考卷，接受真相</button>
+        <div id="quiz-content"></div>
+        <button type="button" class="btn-submit" onclick="submitQuiz()">提交答案（看看誰是塑料姐妹）</button>
     </form>
 
-    <div id="result-area"></div>
+    <div id="result-display">
+        <div class="score-text" id="score-board"></div>
+        <div class="comment-text" id="comment-board"></div>
+        <p>正確答案已在下方用橘色標註！</p>
+    </div>
+
+    <div class="footer">
+        © 2026 藍昌路不吃會死 - 友情大考驗 | 專屬網頁版
+    </div>
 </div>
 
 <script>
-    const quizData = [
-        { q: "當初找房壓力大，王詩函說要去住哪？", a: "公園", o: ["高鐵站", "公園", "圖書館", "回台東"] },
-        { q: "曹嘉凌曾說要在公園住很久，所以要買什麼？", a: "高級帳篷", o: ["高級帳篷", "懶人沙發", "睡袋", "充氣床"] },
-        { q: "王詩函在哪一科考場突然感性發作想謝大家？", a: "會計", o: ["經濟", "統計", "會計", "MIS"] },
-        { q: "承上題，是因為看到有人在考場幹嘛？", a: "嘔吐", o: ["大哭", "睡著", "嘔吐", "作弊"] },
-        { q: "廖婧伃最討厭曹嘉凌在群組對她幹嘛？", a: "戳戳戳", o: ["傳美食照", "已讀不回", "戳戳戳", "改她名字"] },
-        { q: "曹嘉凌捐血換到康乃馨後，自封為什麼稱號？", a: "生活駭客", o: ["捐血大使", "生活駭客", "楠梓小霸王", "省錢專家"] },
-        { q: "王詩函在旋轉拍賣賣靴子，最後只虧了多少？", a: "28元", o: ["10元", "28元", "50元", "100元"] },
-        { q: "大家爭相想認王詩函的哪個親戚當乾爹？", a: "雪人(阿估)", o: ["爸爸", "雪人(阿估)", "舅舅", "哥哥"] },
-        { q: "誰的名字曾被改成長長一串，還被化名為「大膽示愛」？", a: "廖婧伃", o: ["曹嘉凌", "廖婧伃", "王詩函", "阿明"] },
-        { q: "曹嘉凌曾因為趕垃圾車踢到東西，斷了哪裡的指甲？", a: "腳小拇指", o: ["手大拇指", "手食指", "腳大拇指", "腳小拇指"] },
-        { q: "做舊金山披薩時，哪種肉因為太趕來不及加？", a: "壽喜牛", o: ["燻雞", "培根", "德式香腸", "壽喜牛"] },
-        { q: "王詩函抱怨同學打呼，廖婧伃第一反應問什麼？", a: "是你嗎", o: ["有錄影嗎", "老師有聽到嗎", "是你嗎", "大聲嗎"] },
-        { q: "房東「葉螺蓉」的名字讓王詩函聯想到什麼？", a: "很好吃", o: ["很有錢", "很親切", "很好吃", "很像藝人"] },
-        { q: "誰是公認的「藍昌路帶貨王」，常發起團購？", a: "曹嘉凌", o: ["廖婧伃", "王詩函", "曹嘉凌", "學姊"] },
-        { q: "王詩函搬家曾創下一次寄出幾箱行李的紀錄？", a: "9箱", o: ["5箱", "7箱", "9箱", "12箱"] },
-        { q: "大家曾約定要一邊吃宵夜一邊看誰的炎上影片？", a: "艾莉莎莎", o: ["博恩", "艾莉莎莎", "統神", "老高"] },
-        { q: "廖婧伃睡醒發現衣服濕了，結果是因為？", a: "冷氣漏水", o: ["流汗", "冷氣漏水", "屋頂漏水", "口水"] },
-        { q: "誰被吐槽「你就是太理性了」？", a: "王詩函", o: ["王詩函", "廖婧伃", "曹嘉凌", "房東"] },
-        { q: "曹嘉凌推薦動茲券去楠梓哪裡花掉？", a: "高大游泳池", o: ["健身房", "羽球館", "高大游泳池", "迪卡儂"] },
-        { q: "誰曾一口氣要買50顆巧克力球，還怕太晚買不到？", a: "王詩函", o: ["曹嘉凌", "廖婧伃", "王詩函", "阿明"] }
+    const questions = [
+        { q: "當初找房子時，王詩函曾開玩笑說如果租不到房，她要去住哪裡？", o: ["高鐵站", "公園", "圖書館", "回台東"], a: "公園" },
+        { q: "曹嘉凌曾說，如果住進某間心儀的房子，她會做什麼準備？", o: ["買高級帳篷", "買三個空氣清淨機", "找房東認乾爹", "每天煮水餃"], a: "買高級帳篷" },
+        { q: "王詩函曾在哪個考試考到一半時，突然感性發作想起大家對她的照顧？", o: ["經濟學", "管理資訊系統", "會計", "統計學"], a: "會計" },
+        { q: "承上題，當時王詩函感性的原因是因為看到有人在考場幹嘛？", o: ["作弊被抓", "突然大哭", "嘔吐", "睡到打呼"], a: "嘔吐" },
+        { q: "廖婧伃（大膽示愛）在群組曾崩潰大喊，她最討厭誰整天「戳戳戳」？", o: ["王詩函", "曹嘉凌", "房東阿姨", "系主任"], a: "曹嘉凌" },
+        { q: "曹嘉凌曾在捐血後，得意地自封為什麼稱號？", o: ["捐血大使", "生活駭客", "省錢一姐", "藍昌路帶貨王"], a: "生活駭客" },
+        { q: "誰曾經在旋轉拍賣上把穿過一次的靴子，以只虧 28 元的價格成功賣掉？", o: ["曹嘉凌", "廖婧伃", "王詩函", "陳怡萱"], a: "王詩函" },
+        { q: "王詩函心目中的「房地產大亨」，且曾被曹與廖爭相想認作「乾爹」的人是誰？", o: ["雪人（阿估）", "林政賢醫師", "楠梓地產王", "黑貓宅急便人員"], a: "雪人（阿估）" },
+        { q: "廖婧伃在群組中最常被大家吐槽的行為是什麼？", o: ["一直傳美食照片", "消失太久沒回訊息", "名字被改成長長一串", "突然要大家一起跳活寶"], a: "名字被改成長長一串" },
+        { q: "曹嘉凌曾經因為做了什麼事，導致腳小拇指指甲踢斷？", o: ["踢館", "踢到桌腳", "跳舞太用力", "趕垃圾車"], a: "趕垃圾車" },
+        { q: "關於「舊金山披薩」，曹嘉凌做披薩給王詩函吃時，來不及加的是什麼肉？", o: ["燻雞肉", "壽喜牛", "培根", "德式香腸"], a: "壽喜牛" },
+        { q: "王詩函曾抱怨有人在上課時睡到打呼，讓她聽不下去，廖婧伃驚訝地問了什麼？", o: ["老師聽得到嗎", "有錄影嗎", "是你嗎", "要不要叫醒他"], a: "是你嗎" },
+        { q: "房東「葉螺蓉」的名字，讓王詩函覺得聽起來像什麼？", o: ["很貴的藥材", "好好吃（螺螄粉？）", "一場夢", "武俠小說人物"], a: "好好吃（螺螄粉？）" },
+        { q: "誰是公認的「藍昌路帶貨王」，經常在群組問有沒有人要一起買東西？", o: ["廖婧伃", "王詩函", "曹嘉凌", "學姊"], a: "曹嘉凌" },
+        { q: "王詩函搬家時，總共寄了幾箱行李，讓廖婧伃直呼「超屌」？", o: ["3 箱", "5 箱", "9 箱", "12 箱"], a: "9 箱" },
+        { q: "曹嘉凌在群組提到「炎上艾莉莎莎」時，原本想約大家幹嘛？", o: ["一起去現場", "一起看直播", "一起罵", "一起吃宵夜看"], a: "一起吃宵夜看" },
+        { q: "廖婧伃曾說她睡醒後發現「衣服是濕的」，原因是什麼？", o: ["流冷汗", "冷氣漏水", "沒脫衣服睡覺", "屋頂漏水"], a: "冷氣漏水" },
+        { q: "誰曾經自認「非常理性」，卻被曹嘉凌吐槽說「你就是太理性了」？", o: ["王詩函", "廖婧伃", "房東", "陳怡萱"], a: "王詩函" },
+        { q: "當大家在討論「領動茲券」時，曹嘉凌推薦可以用在楠梓的哪個地方？", o: ["健身房", "高大游泳池", "羽球館", "迪卡儂"], a: "高大游泳池" },
+        { q: "誰曾經買了一大堆巧克力球（50顆），還怕現在講會太晚？", o: ["曹嘉凌", "廖婧伃", "王詩函", "學姊"], a: "王詩函" }
     ];
 
-    const questionsContainer = document.getElementById('questions');
-
-    // 生成題目
-    quizData.forEach((item, index) => {
-        const qDiv = document.createElement('div');
-        qDiv.className = 'question-block';
-        qDiv.innerHTML = `
-            <span class="q-text">${index + 1}. ${item.q}</span>
-            <div class="options-group">
-                ${item.o.map(opt => `
-                    <label>
-                        <input type="radio" name="q${index}" value="${opt}"> ${opt}
-                    </label>
-                `).join('')}
-            </div>
-            <div class="correct-ans" id="ans${index}">正確答案：${item.a}</div>
-        `;
-        questionsContainer.appendChild(qDiv);
+    const container = document.getElementById('quiz-content');
+    questions.forEach((q, i) => {
+        let html = `<div class="question">
+            <span class="question-title">${i+1}. ${q.q}</span>
+            <div class="options">`;
+        q.o.forEach(opt => {
+            html += `<label>
+                <input type="radio" name="q${i}" value="${opt}">
+                <span class="option-label">${opt}</span>
+            </label>`;
+        });
+        html += `</div><div class="correct-ans-hint" id="hint${i}">正確答案：${q.a}</div></div>`;
+        container.innerHTML += html;
     });
 
-    function calculateScore() {
+    function submitQuiz() {
         let score = 0;
-        quizData.forEach((item, index) => {
-            const selected = document.querySelector(`input[name="q${index}"]:checked`);
-            const ansDisplay = document.getElementById(`ans${index}`);
-            
-            // 顯示正確答案
-            ansDisplay.style.display = 'block';
-            
-            if (selected && selected.value === item.a) {
+        questions.forEach((q, i) => {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            document.getElementById(`hint${i}`).style.display = 'block';
+            if (selected && selected.value === q.a) {
                 score++;
             }
         });
 
-        const resultArea = document.getElementById('result-area');
-        const percentage = (score / quizData.length) * 100;
-        
-        resultArea.style.display = 'block';
-        resultArea.innerHTML = `您的得分：${score} / ${quizData.length}<br>正確率：${percentage}%`;
-        
-        if (percentage >= 80) {
-            resultArea.style.color = '#27ae60';
-            resultArea.innerHTML += "<br>🎉 藍昌路真閨蜜！";
-        } else if (percentage >= 50) {
-            resultArea.style.color = '#f39c12';
-            resultArea.innerHTML += "<br>😐 好像有點熟又不太熟";
-        } else {
-            resultArea.style.color = '#e74c3c';
-            resultArea.innerHTML += "<br>💀 塑料姐妹，明天請客！";
-        }
+        const resultDisplay = document.getElementById('result-display');
+        const scoreBoard = document.getElementById('score-board');
+        const commentBoard = document.getElementById('comment-board');
+        const accuracy = (score / questions.length) * 100;
 
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        resultDisplay.style.display = 'block';
+        scoreBoard.innerHTML = `得分：${score} / ${questions.length} (${accuracy}%)`;
+
+        if (accuracy === 100) commentBoard.innerHTML = "🏆 靈魂雙胞胎！你們這輩子分不開了！";
+        else if (accuracy >= 80) commentBoard.innerHTML = "💖 真閨蜜！藍昌路沒白混！";
+        else if (accuracy >= 50) commentBoard.innerHTML = "😐 普普通通，你們是租屋工具人吧？";
+        else commentBoard.innerHTML = "💀 塑料姐妹花，明天請客喝飲料謝罪！";
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 
